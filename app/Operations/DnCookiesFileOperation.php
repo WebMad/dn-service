@@ -12,6 +12,12 @@ use Illuminate\Support\Facades\Auth;
  */
 class DnCookiesFileOperation extends AbstractDnOperation
 {
+
+    public function getPathToCookies($cookie_file_name)
+    {
+        return storage_path('app/dn_cookies') . DIRECTORY_SEPARATOR . $cookie_file_name;
+    }
+
     /**
      * Получить FileCookieJar для текущего пользователя
      *
@@ -21,7 +27,7 @@ class DnCookiesFileOperation extends AbstractDnOperation
     {
         /** @var User $user */
         $user = Auth::user();
-        $file = storage_path('app/dn_cookies') . DIRECTORY_SEPARATOR . $user->dn_cookies->dn_cookies_file;
+        $file = $this->getPathToCookies($user->dn_cookies->dn_cookies_file);
         return new FileCookieJar($file);
     }
 
@@ -33,7 +39,7 @@ class DnCookiesFileOperation extends AbstractDnOperation
      */
     public function getUserCookiesFileJar(User $user)
     {
-        $file = storage_path('app/dn_cookies') . DIRECTORY_SEPARATOR . $user->dn_cookies->dn_cookies_file;
+        $file = $this->getPathToCookies($user->dn_cookies->dn_cookies_file);
         return new FileCookieJar($file);
     }
 }

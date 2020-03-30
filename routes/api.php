@@ -18,10 +18,13 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::group(['middleware' => ['auth:api']], function () {
-    Route::get('/news', 'API\NewsController@index');
-    Route::get('/news/school', 'API\NewsController@schoolNews');
-    Route::get('/news/edu-group', 'API\NewsController@eduGroupNews');
+Route::group(['middleware' => ['auth:api'], 'namespace' => 'API'], function () {
+    Route::group(['prefix' => 'news'], function () {
+        Route::get('/', 'NewsController@index');
+        Route::get('/school', 'NewsController@schoolNews');
+        Route::get('/edu-group', 'NewsController@eduGroupNews');
+    });
+    Route::post('logout', 'API\AuthController@logout');
 });
-
+Route::get('login', 'API\AuthController@needLogin')->name('need_login');
 Route::post('login', 'API\AuthController@login');

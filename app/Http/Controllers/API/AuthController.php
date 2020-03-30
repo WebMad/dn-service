@@ -8,9 +8,19 @@ use App\Operations\DnContextOperation;
 use App\Operations\DnUserOperation;
 use App\User;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
+
+    public function needLogin()
+    {
+        return response()->json([
+            'result' => false,
+            'msg' => 'Необходимо войти в аккаунт',
+        ]);
+    }
+
     public function login(DnAuthOperation $dnAuthOperation, DnUserOperation $dnUserOperation, DnContextOperation $dnContextOperation)
     {
         $credentials = request(['login', 'password']);
@@ -43,8 +53,10 @@ class AuthController extends Controller
                     'eg_id' => (!empty($context->eduGroups[0])) ? $context->eduGroups[0]->id : null,
                     'dn_cookies_file_id' => $auth_request['cookie_model']->id,
                     'dn_access_token' => $dn_access_token,
+                    'is_auth' => true,
                 ]);
             } else {
+                $user_db->is_auth = true;
                 $user_db->dn_cookies_file_id = $auth_request['cookie_model']->id;
                 $user_db->dn_access_token = $dn_access_token;
                 $user_db->save();
@@ -69,5 +81,13 @@ class AuthController extends Controller
                 'msg' => 'Не все поля заполнены'
             ]);
         }
+    }
+
+    public function logout(DnAuthOperation $dnAuthOperation)
+    {
+        $dnAuthOperation->logout(Auth::user());
+        return response()->json([
+            'result' => true,
+        ]);
     }
 }

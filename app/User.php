@@ -30,6 +30,7 @@ class User extends Authenticatable
         'eg_id',
         'dn_cookies_file_id',
         'dn_access_token',
+        'is_auth'
     ];
 
     public function dn_cookies()

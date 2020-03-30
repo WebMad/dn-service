@@ -4,24 +4,15 @@ namespace App\Operations;
 
 
 use App\DnCookiesFile;
+use App\User;
 use GuzzleHttp\Client;
 use GuzzleHttp\Cookie\CookieJar;
 use GuzzleHttp\Cookie\FileCookieJar;
 use GuzzleHttp\RedirectMiddleware;
+use Illuminate\Support\Facades\Auth;
 
 class DnAuthOperation extends AbstractDnOperation
 {
-
-    /**
-     * Получить адрес cookie файла для взаимодействия с дневник.ру
-     *
-     * @param $cookie_id
-     * @return string
-     */
-    public function getCookieFile($cookie_id)
-    {
-        return storage_path('app/dn_cookies') . '/cookie_' . $cookie_id . '.txt';
-    }
 
     /**
      * Авторизует пользователя через дневник.ру
@@ -98,6 +89,20 @@ class DnAuthOperation extends AbstractDnOperation
             'cookies' => $cookie_jar
         ]);
         return explode('=', explode('&', $access_token_http->getHeader(RedirectMiddleware::HISTORY_HEADER)[0])[4])[2];
+    }
+
+    public function logout(User $user)
+    {
+        foreach ($user->tokens as $token) {
+            $token->revoke();
+        }
+        if (!empty($user->dn_cookies_file_id)) {
+            $dn_cookies = $user->dn_cookies;
+            unlink((new DnCookiesFileOperation())->getPathToCookies($user->dn_cookies->dn_cookies_file));
+            $dn_cookies->delete();
+        }
+        $user->is_auth = false;
+        $user->save();
     }
 
 }
