@@ -54,6 +54,7 @@ class AuthController extends Controller
                     'dn_cookies_file_id' => $auth_request['cookie_model']->id,
                     'dn_access_token' => $dn_access_token,
                     'is_auth' => true,
+                    'sex' => $user->sex,
                 ]);
             } else {
                 $user_db->is_auth = true;

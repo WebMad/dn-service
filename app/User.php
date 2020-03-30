@@ -18,9 +18,9 @@ class User extends Authenticatable
     protected $fillable = [
         'person_id',
         'dn_uid',
-        'name',
         'email',
         'login',
+        'short_name',
         'first_name',
         'middle_name',
         'last_name',
@@ -30,7 +30,8 @@ class User extends Authenticatable
         'eg_id',
         'dn_cookies_file_id',
         'dn_access_token',
-        'is_auth'
+        'is_auth',
+        'sex'
     ];
 
     public function dn_cookies()

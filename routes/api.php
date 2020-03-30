@@ -24,7 +24,8 @@ Route::group(['middleware' => ['auth:api'], 'namespace' => 'API'], function () {
         Route::get('/school', 'NewsController@schoolNews');
         Route::get('/edu-group', 'NewsController@eduGroupNews');
     });
-    Route::post('logout', 'API\AuthController@logout');
+    Route::get('homework', 'HomeworkController@homework');
+    Route::post('logout', 'AuthController@logout');
 });
 Route::get('login', 'API\AuthController@needLogin')->name('need_login');
 Route::post('login', 'API\AuthController@login');
