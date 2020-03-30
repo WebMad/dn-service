@@ -20,6 +20,8 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 
 Route::group(['middleware' => ['auth:api']], function () {
     Route::get('/news', 'API\NewsController@index');
+    Route::get('/news/school', 'API\NewsController@schoolNews');
+    Route::get('/news/edu-group', 'API\NewsController@eduGroupNews');
 });
 
 Route::post('login', 'API\AuthController@login');

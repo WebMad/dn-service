@@ -23,19 +23,63 @@ class DnNewsOperation extends AbstractDnOperation
 
     }
 
+    public function getMixNews($school_id, $eg_id, $limit)
+    {
+        $this->getSchoolNews($school_id, $limit);
+        $this->getEduGroupNews($school_id, $eg_id, $limit);
+
+        return News::where([
+            'school_id' => $school_id,
+        ])->orderBy('dn_created_at', 'desc')
+            ->limit($limit)
+            ->get();
+    }
+
     public function getSchoolNews($school_id, $limit)
     {
-        $user = Auth::user();
         $cookie_file_jar = (new DnCookiesFileOperation())->getMyCookiesFileJar();
 
-        $news_request = $this->client->get('posts/topic/school_' . $user->school_id, [
+        $news_request = $this->client->get('posts/topic/school_' . $school_id, [
             'cookies' => $cookie_file_jar,
             'query' => [
                 'take' => $limit
             ]
         ]);
 
-        $news_decoded_json = json_decode($news_request->getBody()->getContents(), true);
+        $this->parseAndSaveNewsFromDn($news_request->getBody()->getContents(), $school_id);
+
+        return News::where([
+            'school_id' => $school_id,
+            'eg_id' => null,
+        ])->orderBy('dn_created_at', 'desc')
+            ->limit($limit)
+            ->get();
+    }
+
+    public function getEduGroupNews($school_id, $eg_id, $limit)
+    {
+        $cookie_file_jar = (new DnCookiesFileOperation())->getMyCookiesFileJar();
+
+        $news_request = $this->client->get('posts/topic/school_' . $school_id . '_group_' . $eg_id, [
+            'cookies' => $cookie_file_jar,
+            'query' => [
+                'take' => $limit
+            ]
+        ]);
+
+        $this->parseAndSaveNewsFromDn($news_request->getBody()->getContents(), $school_id, $eg_id);
+
+        return News::where([
+            'school_id' => $school_id,
+            'eg_id' => $eg_id
+        ])->orderBy('dn_created_at', 'desc')
+            ->limit($limit)
+            ->get();
+    }
+
+    private function parseAndSaveNewsFromDn($json, $school_id, $eg_id = null)
+    {
+        $news_decoded_json = json_decode($json, true);
         $posts = $news_decoded_json['posts'];
         foreach ($posts as $post) {
             $thread_id = Thread::firstOrCreate([
@@ -64,20 +108,10 @@ class DnNewsOperation extends AbstractDnOperation
                 'views_count' => $post['viewsCount'],
                 'author_uid' => $post['author']['id'],
                 'dn_created_at' => $news_date,
-                'school_id' => $user->school_id,
+                'school_id' => $school_id,
                 'thread_id' => $thread_id->id,
-                'eg_id' => null,
+                'eg_id' => $eg_id,
             ])->get();
         }
-
-        return News::where(['school_id' => $school_id])
-            ->orderBy('dn_created_at', 'desc')
-            ->limit($limit)
-            ->get();
-    }
-
-    public function getEduGroupNews($school_id, $eg_id)
-    {
-
     }
 }

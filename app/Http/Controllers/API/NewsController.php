@@ -29,6 +29,29 @@ class NewsController extends Controller
 
         $user = Auth::user();
 
+        return response()->json($dnNewsOperation->getMixNews($user->school_id, $user->eg_id, $limit));
+    }
+
+    public function schoolNews(NewsRequest $request, DnNewsOperation $dnNewsOperation)
+    {
+        $limit = $request->input(['limit']);
+        if (empty($limit)) {
+            $limit = 5;
+        }
+
+        $user = Auth::user();
+
         return response()->json($dnNewsOperation->getSchoolNews($user->school_id, $limit));
+    }
+
+    public function eduGroupNews(NewsRequest $request, DnNewsOperation $dnNewsOperation)
+    {
+        $limit = $request->input(['limit']);
+        if (empty($limit)) {
+            $limit = 5;
+        }
+
+        $user = Auth::user();
+        return response()->json($dnNewsOperation->getEduGroupNews($user->school_id, $user->eg_id, $limit));
     }
 }
