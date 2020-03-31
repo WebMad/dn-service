@@ -66,7 +66,8 @@ class DnNewsOperation extends AbstractDnOperation
                 'take' => $limit
             ]
         ]);
-
+        echo $news_request->getBody()->getContents();
+        die();
         $this->parseAndSaveNewsFromDn($news_request->getBody()->getContents(), $school_id, $eg_id);
 
         return News::where([
@@ -79,29 +80,30 @@ class DnNewsOperation extends AbstractDnOperation
 
     private function parseAndSaveNewsFromDn($json, $school_id, $eg_id = null)
     {
+        $params_operation = new ParamsOperation();
         $news_decoded_json = json_decode($json, true);
         $posts = $news_decoded_json['posts'];
         foreach ($posts as $post) {
-            $thread_id = Thread::firstOrCreate([
+            $thread_id = Thread::firstOrCreate($params_operation->buildArray([
                 'event_key' => $post['thread']['eventKey']
-            ]);
+            ]));
 
             foreach ($post['thread']['comments'] as $comment) {
                 ThreadComment::updateOrCreate([
                     'dn_id' => $comment['id']
-                ], [
+                ], $params_operation->buildArray([
                     'dn_id' => $comment['id'],
                     'reply_uid' => $comment['replyUserId'],
                     'author_uid' => $comment['authorId'],
                     'dn_created_at' => date('Y-m-d H:i:s', $comment['createdDateTime']),
                     'text' => $comment['text'],
                     'thread_id' => $thread_id->id,
-                ]);
+                ]));
             }
             $news_date = !empty($post['createdDate']) ? date('Y-m-d H:i:s', $post['createdDate']) : date('Y-m-d H:i:s');
             News::updateOrCreate([
                 'dn_news_id' => $post['id']
-            ], [
+            ], $params_operation->buildArray([
                 'dn_news_id' => $post['id'],
                 'text' => $post['text'],
                 'topic_name' => $post['topicName'],
@@ -111,7 +113,7 @@ class DnNewsOperation extends AbstractDnOperation
                 'school_id' => $school_id,
                 'thread_id' => $thread_id->id,
                 'eg_id' => $eg_id,
-            ])->get();
+            ]))->get();
         }
     }
 }

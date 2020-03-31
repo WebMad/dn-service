@@ -19,4 +19,19 @@ class Lesson extends Model
         'floor',
         'hours',
     ];
+
+    public function subject()
+    {
+        return $this->hasOne('App\Subject', 'dn_id', 'subject_id');
+    }
+
+    public function homework()
+    {
+        return $this->hasMany('App\Homework', 'lesson_id', 'dn_id');
+    }
+
+    public function marks()
+    {
+        return $this->hasMany('App\Mark', 'lesson_id', 'dn_id');
+    }
 }
